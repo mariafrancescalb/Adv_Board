@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advisory Meeting Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e0dfd8;
+  --text: #1a1917;
+  --text2: #6b6a65;
+  --text3: #9e9d97;
+  --red: #d63f2e;
+  --red-light: #fcecea;
+  --red-text: #a32d1e;
+  --blue: #2563b0;
+  --blue-light: #eff4fc;
+  --blue-text: #1a4a8a;
+  --green: #1e7d4f;
+  --green-light: #eaf4ee;
+  --amber: #b45309;
+  --amber-light: #fef3e2;
+  --purple: #5b45b8;
+  --purple-light: #f0eeff;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.api-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+}
+.api-input-wrap label {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+.api-input-wrap input {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  width: 220px;
+  outline: none;
+}
+.meeting-count {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+/* Input panel */
+.input-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.input-panel-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+textarea#raw-text {
+  width: 100%;
+  min-height: 120px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.6;
+}
+textarea#raw-text:focus { border-color: #b0aaa0; }
+.input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+input#meeting-name {
+  flex: 1;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text);
+  outline: none;
+}
+input#meeting-name:focus { border-color: #b0aaa0; }
+.btn {
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--text);
+  color: #fff;
+}
+.btn-primary:hover { background: #333; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+
+/* Tabs */
+.tabs-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.tab {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab:hover { border-color: #b0aaa0; }
+.tab.active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+.tab .del {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.tab:hover .del { opacity: 1; }
+
+/* Notifications */
+.notif {
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 1rem;
+  display: none;
+}
+.notif-error { background: var(--red-light); color: var(--red-text); }
+.notif-loading {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text2);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dashboard */
+.dash-grid-top {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.dash-grid-mid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.dash-grid-bottom {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+.card-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1rem;
+}
+/* Evidenze */
+.ev-list { display: flex; flex-direction: column; gap: 10px; }
+.ev-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+}
+.ev-num {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ev-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+.ev-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+.ev-fonte { font-size: 10px; color: var(--text3); margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+/* Bar chart */
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.bar-label { font-size: 12px; color: var(--text); min-width: 140px; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+.bar-val { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text3); min-width: 32px; text-align: right; }
+
+/* Takeaway */
+.takeaway-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.takeaway-item { display: flex; gap: 10px; align-items: flex-start; }
+.tk-num {
+  min-width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.tk-text { font-size: 13px; line-height: 1.5; }
+
+/* Distribution */
+.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; }
+.dist-cell {
+  border-radius: var(--radius);
+  padding: 10px 8px;
+  text-align: center;
+}
+.dist-pct { font-size: 22px; font-weight: 600; line-height: 1; }
+.dist-lbl { font-size: 10px; margin-top: 4px; line-height: 1.3; opacity: 0.85; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text3);
+}
+.empty-icon { font-size: 48px; margin-bottom: 1rem; opacity: 0.3; }
+.empty-title { font-size: 16px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .dash-grid-top, .dash-grid-mid, .dash-grid-bottom { grid-template-columns: 1fr; }
+  .api-input-wrap input { width: 140px; }
+  .topbar { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Advisory Dashboard
+  </div>
+  <div class="topbar-right">
+    <div class="api-input-wrap">
+      <label>API KEY</label>
+      <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" />
+    </div>
+    <div class="meeting-count" id="meeting-count">0 meeting</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="input-panel">
+    <div class="input-panel-title">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Incolla il testo del meeting
+    </div>
+    <textarea id="raw-text" placeholder="Incolla qui note, trascrizione o summary del meeting. Più il testo è dettagliato (percentuali di voto, citazioni, temi discussi), più precisa sarà l'analisi..."></textarea>
+    <div class="input-row">
+      <input type="text" id="meeting-name" placeholder="Nome meeting (es: Advisory Board Milano, Apr 2025)" />
+      <button class="btn btn-secondary" onclick="clearInput()">Svuota</button>
+      <button class="btn btn-primary" id="btn-analyze" onclick="analyzeMeeting()">Analizza →</button>
+    </div>
+  </div>
+
+  <div id="error-box" class="notif notif-error"></div>
+  <div id="loading-box" class="notif notif-loading">
+    <div class="spinner"></div>
+    <span>Analisi AI in corso...</span>
+  </div>
+
+  <div id="tabs-row" class="tabs-row" style="display:none"></div>
+
+  <div id="dashboard-area" style="display:none"></div>
+
+  <div id="empty-state" class="empty-state">
+    <div class="empty-icon">◎</div>
+    <div class="empty-title">Nessun meeting analizzato</div>
+    <div class="empty-sub">Inserisci la tua API key Anthropic in alto a destra,<br>poi incolla il testo del meeting e clicca Analizza</div>
+  </div>
+
+</div>
+
+<div class="footer">powered by claude — advisory meeting intelligence</div>
+
+<script>
+const meetings = [];
+let activeIdx = 0;
+
+const COLORS = ['#d63f2e','#2563b0','#1e7d4f','#b45309','#5b45b8','#b5607a'];
+const DIST_BG   = ['#fcecea','#eff4fc','#eaf4ee','#fef3e2','#f0eeff'];
+const DIST_TEXT = ['#a32d1e','#1a4a8a','#155c38','#854009','#3c2d9e'];
+
+function getApiKey() {
+  return document.getElementById('api-key').value.trim();
+}
+
+function clearInput() {
+  document.getElementById('raw-text').value = '';
+  document.getElementById('meeting-name').value = '';
+}
+
+function showError(msg) {
+  const b = document.getElementById('error-box');
+  b.textContent = msg;
+  b.style.display = 'block';
+  setTimeout(() => b.style.display = 'none', 7000);
+}
+
+async function analyzeMeeting() {
+  const key = getApiKey();
+  if (!key) { showError('Inserisci la tua API key Anthropic in alto a destra.'); return; }
+  const text = document.getElementById('raw-text').value.trim();
+  if (!text) { showError('Incolla il testo del meeting prima di analizzare.'); return; }
+  const name = document.getElementById('meeting-name').value.trim() || ('Meeting ' + (meetings.length + 1));
+
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  document.getElementById('loading-box').style.display = 'flex';
+  document.getElementById('error-box').style.display = 'none';
+
+  const prompt = `Analizza il seguente testo di un advisory meeting e restituisci SOLO un oggetto JSON valido, senza markdown, senza backtick, senza testo aggiuntivo.
+
+Struttura richiesta:
+{
+  "temi_chiave": [{"nome": "string max 30 char", "valore": number}],
+  "drivers": [{"nome": "string max 40 char", "percentuale": number}],
+  "barriere": [{"nome": "string max 40 char", "percentuale": number}],
+  "takeaway": ["string max 15 parole", ...],
+  "evidenze": [{"titolo": "string", "descrizione": "string", "fonte": "string"}],
+  "distribuzione": [{"tema": "string max 20 char", "percentuale": number}]
+}
+
+Regole:
+- temi_chiave: 4-6 temi, valore = citazioni (intero)
+- drivers: 3-5 driver, percentuale = % consenso
+- barriere: 2-4 barriere, percentuale = % di menzione (se non esplicite, stimale)
+- takeaway: esattamente 4 frasi brevi
+- evidenze: 3-5 punti chiave emersi
+- distribuzione: 4-5 temi con % che sommano a 100
+
+Testo:
+${text}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'Errore API ' + resp.status);
+    }
+    const data = await resp.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed._name = name;
+    parsed._date = new Date().toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+    meetings.push(parsed);
+    activeIdx = meetings.length - 1;
+    renderAll();
+  } catch(e) {
+    showError('Errore: ' + (e.message || 'Riprova. Verifica che la API key sia corretta e il testo sufficientemente dettagliato.'));
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading-box').style.display = 'none';
+  }
+}
+
+function renderAll() {
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('dashboard-area').style.display = 'block';
+  document.getElementById('tabs-row').style.display = 'flex';
+  document.getElementById('meeting-count').textContent = meetings.length + ' meeting';
+  renderTabs();
+  renderDash(meetings[activeIdx]);
+}
+
+function renderTabs() {
+  document.getElementById('tabs-row').innerHTML = meetings.map((m, i) => `
+    <div class="tab ${i === activeIdx ? 'active' : ''}" onclick="switchTab(${i})">
+      ${m._name}
+      <span class="del" onclick="event.stopPropagation();deleteMeeting(${i})">✕</span>
+    </div>
+  `).join('');
+}
+
+function switchTab(i) { activeIdx = i; renderAll(); }
+
+function deleteMeeting(i) {
+  meetings.splice(i, 1);
+  if (!meetings.length) {
+    document.getElementById('dashboard-area').style.display = 'none';
+    document.getElementById('tabs-row').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('meeting-count').textContent = '0 meeting';
+    return;
+  }
+  activeIdx = Math.min(activeIdx, meetings.length - 1);
+  renderAll();
+}
+
+function bar(label, pct, color) {
+  return `<div class="bar-row">
+    <span class="bar-label" title="${label}">${label}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    <span class="bar-val">${pct}%</span>
+  </div>`;
+}
+
+function renderDash(m) {
+  const temiMax = Math.max(...(m.temi_chiave||[]).map(t=>t.valore), 1);
+
+  const evHTML = (m.evidenze||[]).map((e,i) => `
+    <div class="ev-item">
+      <div class="ev-num">${i+1}</div>
+      <div>
+        <div class="ev-title">${e.titolo}</div>
+        <div class="ev-desc">${e.descrizione}</div>
+        ${e.fonte ? `<div class="ev-fonte">${e.fonte}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  const temiHTML = (m.temi_chiave||[]).map((t,i) => bar(t.nome, Math.round(t.valore/temiMax*100), COLORS[i%COLORS.length])).join('');
+  const driversHTML = (m.drivers||[]).map((d,i) => bar(d.nome, d.percentuale, COLORS[i%COLORS.length])).join('');
+  const barriereHTML = (m.barriere||[]).map(b => bar(b.nome, b.percentuale, '#9e9d97')).join('');
+
+  const tkHTML = (m.takeaway||[]).map((t,i) => `
+    <li class="takeaway-item">
+      <div class="tk-num">${i+1}</div>
+      <span class="tk-text">${t}</span>
+    </li>`).join('');
+
+  const distHTML = (m.distribuzione||[]).map((d,i) => `
+    <div class="dist-cell" style="background:${DIST_BG[i%DIST_BG.length]}">
+      <div class="dist-pct" style="color:${DIST_TEXT[i%DIST_TEXT.length]}">${d.percentuale}%</div>
+      <div class="dist-lbl" style="color:${DIST_TEXT[i%DIST_TEXT.length]}">${d.tema}</div>
+    </div>`).join('');
+
+  document.getElementById('dashboard-area').innerHTML = `
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:1.2rem">${m._date}</div>
+
+    <div class="dash-grid-top">
+      <div class="card">
+        <div class="card-label">Temi chiave</div>
+        ${temiHTML}
+      </div>
+      <div class="card">
+        <div class="card-label">Evidenze in discussione</div>
+        <div class="ev-list">${evHTML}</div>
+      </div>
+    </div>
+
+    <div class="dash-grid-mid">
+      <div class="card">
+        <div class="card-label">Drivers principali</div>
+        ${driversHTML}
+      </div>
+      <div class="card">
+        <div class="card-label">Barriere principali</div>
+        ${barriereHTML}
+      </div>
+    </div>
+
+    <div class="dash-grid-bottom">
+      <div class="card">
+        <div class="card-label">Top takeaway emersi</div>
+        <ul class="takeaway-list">${tkHTML}</ul>
+      </div>
+      <div class="card">
+        <div class="card-label">Distribuzione per tema</div>
+        <div class="dist-grid">${distHTML}</div>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
